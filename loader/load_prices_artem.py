@@ -51,11 +51,11 @@ if not got_new_email:
 ################# Uploading to DB #####################
 
 connection = psycopg2.connect(
-    host=os.environ.get('HOST'),
-    port=os.environ.get('PORT'),
-    database=os.environ.get('DATABASE'),
-    user=os.environ.get('USER'),
-    password=os.environ.get('PASSWORD'),
+    host=os.environ.get('DATABASE_HOST'),
+    port=os.environ.get('DATABASE_PORT'),
+    database=os.environ.get('DATABASE_NAME'),
+    user=os.environ.get('DATABASE_USER'),
+    password=os.environ.get('DATABASE_PASSWORD'),
 )
 
 if not connection:
