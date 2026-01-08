@@ -46,21 +46,21 @@ if not got_new_email:
 ################# Uploading to DB #####################
 
 connection = psycopg2.connect(
-    host="79.174.88.163",
-    port="17041",
-    database="parfum",
-    user="vlyagusha",
-    password="Sh19+ZnSh19+Zn",
+    host='79.174.88.163',
+    port='17041',
+    database='parfum',
+    user='vlyagusha',
+    password='Sh19+ZnSh19+Zn',
 )
 
 if not connection:
-    print("Connection closed.")
+    print('Connection closed.')
     exit(1)
 
 cursor = connection.cursor()
 
-contractor = "Артем"
-cursor.execute("update products set is_available = false where contractor = %s", (contractor,) )
+contractor = 'Артем'
+cursor.execute('delete from prices where contractor = %s', (contractor, ))
 connection.commit()
 
 for filename in [XLS_PATH + 'artem.xls', XLS_PATH + 'otliv.xls']:
@@ -79,38 +79,22 @@ for filename in [XLS_PATH + 'artem.xls', XLS_PATH + 'otliv.xls']:
         else:
             price_rub = float(row[15])
 
-        # print(code, title, price_rub)
-
-        products_to_insert.append([contractor, code, title, True, ])
-        prices_to_insert.append([code, title, price_rub, today])
-
-        if len(products_to_insert) >= batch_size:
-            args = ','.join(cursor.mogrify("(%s,%s,%s,%s)", i).decode('utf-8') for i in products_to_insert)
-            cursor.execute("insert into products(contractor, code, title, is_available) values " + args + " on conflict(code, title) do update set is_available = true")
-            connection.commit()
-            print("Inserted ", len(products_to_insert), " products")
-            products_to_insert = []
-
+        prices_to_insert.append([contractor, code, title, price_rub, today])
         if len(prices_to_insert) >= batch_size:
-            args = ','.join(cursor.mogrify("(%s,%s,%s,%s)", i).decode('utf-8') for i in prices_to_insert)
-            cursor.execute("insert into prices(code, title, price_rub, updated_at) values " + args + " on conflict do nothing")
+            args = ','.join(cursor.mogrify('(%s,%s,%s,%s,%s)', i).decode('utf-8') for i in prices_to_insert)
+            cursor.execute('insert into prices(contractor, code, title, price_rub, updated_at) values ' + args)
             connection.commit()
-            print("Inserted ", len(prices_to_insert), " prices")
+            print('Inserted ', len(prices_to_insert), ' prices')
             prices_to_insert = []
 
-    args = ','.join(cursor.mogrify("(%s,%s,%s,%s)", i).decode('utf-8') for i in products_to_insert)
-    cursor.execute("insert into products(contractor, code, title, is_available) values " + args + " on conflict(code, title) do update set is_available = true")
+    args = ','.join(cursor.mogrify('(%s,%s,%s,%s,%s)', i).decode('utf-8') for i in prices_to_insert)
+    cursor.execute('insert into prices(contractor, code, title, price_rub, updated_at) values ' + args)
     connection.commit()
-    print("Inserted ", len(products_to_insert), " products")
-
-    args = ','.join(cursor.mogrify("(%s,%s,%s,%s)", i).decode('utf-8') for i in prices_to_insert)
-    cursor.execute("insert into prices(code, title, price_rub, updated_at) values " + args + " on conflict do nothing")
-    connection.commit()
-    print("Inserted ", len(prices_to_insert), " prices")
+    print('Inserted ', len(prices_to_insert), ' prices')
 
 if connection:
     cursor.close()
     connection.close()
-    print("Connection closed.")
+    print('Connection closed.')
 
 ################## Finish ######################
