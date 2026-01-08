@@ -1,17 +1,23 @@
 # -*- coding: utf-8 -*-
-from os.path import isfile
 
+import os
 import imap_tools
 import pandas as pd
 import psycopg2
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 ################## Configuration ######################
 
-IMAP_SERVER = 'imap.yandex.ru'
-EMAIL_USER = 'kikkershop@yandex.ru'
-EMAIL_PASS = 'rzkizhonztferzmi'
-CONTRACTOR_EMAIL = 'piramida9999@mail.ru'
-XLS_PATH = 'data/piramida9999/piramida9999.xls'
+IMAP_SERVER = os.environ.get('IMAP_SERVER')
+EMAIL_USER = os.environ.get('EMAIL_USER')
+EMAIL_PASS = os.environ.get('EMAIL_PASS')
+CONTRACTOR_EMAIL = 'cska-love@mail.ru'
+XLS_PATH = '../data/yr/yr.xls'
+if not os.path.exists(XLS_PATH):
+    os.makedirs(XLS_PATH)
 
 ################# Checking e-mail #####################
 
@@ -22,8 +28,9 @@ with imap_tools.MailBox(IMAP_SERVER).login(EMAIL_USER, EMAIL_PASS, 'INBOX') as m
             continue
         got_new_email = True
         today = msg.date
+        print(today)
         for att in msg.attachments:
-            print(att.filename, att.content_type)
+            print(att.filename)
             with open(XLS_PATH, 'wb') as f:
                 f.write(att.payload)
         break
@@ -35,11 +42,11 @@ if not got_new_email:
 ################# Uploading to DB #####################
 
 connection = psycopg2.connect(
-    host='79.174.88.163',
-    port='17041',
-    database='parfum',
-    user='vlyagusha',
-    password='Sh19+ZnSh19+Zn',
+    host=os.environ.get('HOST'),
+    port=os.environ.get('PORT'),
+    database=os.environ.get('DATABASE'),
+    user=os.environ.get('USER'),
+    password=os.environ.get('PASSWORD'),
 )
 
 if not connection:
@@ -48,7 +55,7 @@ if not connection:
 
 cursor = connection.cursor()
 
-contractor = 'Маргарита'
+contractor = 'Яр'
 batch_size = 5000
 
 cursor.execute('delete from prices where contractor = %s', (contractor, ))
@@ -57,11 +64,11 @@ connection.commit()
 price = pd.read_excel(XLS_PATH)
 prices_to_insert = []
 for index, row in price.iterrows():
-    if not str(row[0]).isdigit():
+    if not str(row.iloc[0]).startswith('YR'):
         continue
-    code = str(row[0])
-    title = str(row[1])
-    price_usd = float(row[2])
+    code = str(row.iloc[0])
+    title = str(row.iloc[1])
+    price_usd = float(row.iloc[2])
 
     prices_to_insert.append([contractor, code, title, price_usd, today])
     if len(prices_to_insert) >= batch_size:

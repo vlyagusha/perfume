@@ -7,13 +7,17 @@ import pandas as pd
 import psycopg2
 import math
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 ################## Configuration ######################
 
-IMAP_SERVER = 'imap.yandex.ru'
-EMAIL_USER = 'kikkershop@yandex.ru'
-EMAIL_PASS = 'rzkizhonztferzmi'
+IMAP_SERVER = os.environ.get('IMAP_SERVER')
+EMAIL_USER = os.environ.get('EMAIL_USER')
+EMAIL_PASS = os.environ.get('EMAIL_PASS')
 CONTRACTOR_EMAIL = 'price@igells.ru'
-XLS_PATH = 'data/artem/'
+XLS_PATH = '../data/artem/'
 if not os.path.exists(XLS_PATH):
     os.makedirs(XLS_PATH)
 
@@ -26,6 +30,7 @@ with imap_tools.MailBox(IMAP_SERVER).login(EMAIL_USER, EMAIL_PASS, 'INBOX') as m
             continue
         got_new_email = True
         today = msg.date
+        print(today)
         for att in msg.attachments:
             if att.filename.endswith('.xls'):
                 with open(XLS_PATH + 'artem.xls', 'wb') as f:
@@ -46,11 +51,11 @@ if not got_new_email:
 ################# Uploading to DB #####################
 
 connection = psycopg2.connect(
-    host='79.174.88.163',
-    port='17041',
-    database='parfum',
-    user='vlyagusha',
-    password='Sh19+ZnSh19+Zn',
+    host=os.environ.get('HOST'),
+    port=os.environ.get('PORT'),
+    database=os.environ.get('DATABASE'),
+    user=os.environ.get('USER'),
+    password=os.environ.get('PASSWORD'),
 )
 
 if not connection:
@@ -60,7 +65,7 @@ if not connection:
 cursor = connection.cursor()
 
 contractor = 'Артем'
-cursor.execute('delete from prices where contractor = %s', (contractor, ))
+cursor.execute('delete from prices where contractor = %s', (contractor,))
 connection.commit()
 
 for filename in [XLS_PATH + 'artem.xls', XLS_PATH + 'otliv.xls']:
@@ -72,12 +77,12 @@ for filename in [XLS_PATH + 'artem.xls', XLS_PATH + 'otliv.xls']:
         if index < 8:
             continue
 
-        code = str(row[0])
-        title = str(row[6])
-        if math.isnan(row[15]):
+        code = str(row.iloc[0])
+        title = str(row.iloc[6])
+        if math.isnan(row.iloc[15]):
             price_rub = None
         else:
-            price_rub = float(row[15])
+            price_rub = float(row.iloc[15])
 
         prices_to_insert.append([contractor, code, title, price_rub, today])
         if len(prices_to_insert) >= batch_size:
