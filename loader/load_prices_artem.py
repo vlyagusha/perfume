@@ -17,7 +17,7 @@ IMAP_SERVER = os.environ.get('IMAP_SERVER')
 EMAIL_USER = os.environ.get('EMAIL_USER')
 EMAIL_PASS = os.environ.get('EMAIL_PASS')
 CONTRACTOR_EMAIL = 'price@igells.ru'
-XLS_PATH = '../data/artem/'
+XLS_PATH = 'data/artem/'
 if not os.path.exists(XLS_PATH):
     os.makedirs(XLS_PATH)
 
