@@ -15,9 +15,10 @@ IMAP_SERVER = os.environ.get('IMAP_SERVER')
 EMAIL_USER = os.environ.get('EMAIL_USER')
 EMAIL_PASS = os.environ.get('EMAIL_PASS')
 CONTRACTOR_EMAIL = 'piramida9999@mail.ru'
-XLS_PATH = 'data/piramida9999/piramida9999.xls'
+XLS_PATH = 'data/piramida9999/'
 if not os.path.exists(XLS_PATH):
     os.makedirs(XLS_PATH)
+XLS_PATH += 'piramida9999.xls'
 
 ################# Checking e-mail #####################
 
