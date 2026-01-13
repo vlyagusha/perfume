@@ -3,13 +3,37 @@
 import os
 import psycopg2
 import locale
+import xml.etree.ElementTree as ElementTree
+import requests
 
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 from dotenv import load_dotenv
+from datetime import date
 
 load_dotenv()
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
+RATES = {
+    'USD': {
+        date.today(): 0.
+    },
+}
+
+def get_usd_rate() -> float:
+    if RATES['USD'][date.today()] > 0:
+        return RATES['USD'][date.today()]
+
+    xml_string = requests.get('http://www.cbr.ru/scripts/XML_daily.asp').text
+    root = ElementTree.fromstring(xml_string)
+    rate = 0
+    for valute in root.findall('Valute'):
+        if valute.find('CharCode').text == 'USD':
+            rate = float(valute.find('Value').text.replace(',', '.'))
+            break
+    rate = round(rate * 1.05, 0)
+    RATES['USD'][date.today()] = rate
+
+    return rate
 
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(f'Hello {update.effective_user.first_name}')
@@ -59,7 +83,10 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             price = round(price_rub * 1.2, -2)
 
         if not price_usd == 0:
-            price = round(price_usd * 80 * 1.2, -2)
+            rate = get_usd_rate()
+            if rate == 0:
+                continue
+            price = round(price_usd * rate * 1.2, -2)
 
         result += f'{code} {title} {locale.currency(price, grouping=True)}\n'
     if result == '':
