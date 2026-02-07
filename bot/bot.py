@@ -50,7 +50,7 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text('Нет подключения к БД')
         return
 
-    query = 'select code, title, price_usd, price_rub from prices'
+    query = 'select code, title, price_usd, price_rub from raw_prices'
 
     need_otliv = False
     slugs = []
@@ -65,7 +65,7 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query += ' where '
     query += ' and '.join(slugs)
     query += ' order by coalesce(price_usd, price_rub) desc'
-    query += ' limit 10'
+    # query += ' limit 100'
 
     cursor = connection.cursor()
     cursor.execute(query)
@@ -87,6 +87,10 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             if rate == 0:
                 continue
             price = round(price_usd * rate * 1.2, -2)
+
+        if len(result + f'{code} {title} {locale.currency(price, grouping=True)}\n') >= 1000:
+            await update.message.reply_text(result)
+            result = ''
 
         result += f'{code} {title} {locale.currency(price, grouping=True)}\n'
     if result == '':

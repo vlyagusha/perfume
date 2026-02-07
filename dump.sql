@@ -1,22 +1,22 @@
 begin;
 
-drop table prices;
+create extension if not exists pg_trgm;
 
-create table prices
+drop table if exists raw_prices;
+
+create table raw_prices
 (
-    id           serial,
-    contractor   text                    not null,
-    code         text                    not null,
-    title        text                    not null,
+    id           bigserial,
+    contractor   text not null,
+    code         text not null,
+    title        text not null,
     price_usd    double precision,
     price_rub    double precision,
     updated_at   timestamp default now() not null
 );
 
-alter table prices
-    owner to vlyagusha;
+alter table raw_prices owner to perfume_user;
 
-create index idx_prices_title_trgm
-    on prices using gin (title gin_trgm_ops);
+create index idx_raw_prices_title_trgm on raw_prices using gin (title gin_trgm_ops);
 
 commit;

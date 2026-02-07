@@ -59,7 +59,7 @@ cursor = connection.cursor()
 contractor = 'Маргарита'
 batch_size = 5000
 
-cursor.execute('delete from prices where contractor = %s', (contractor, ))
+cursor.execute('delete from raw_prices where contractor = %s', (contractor, ))
 connection.commit()
 
 price = pd.read_excel(XLS_PATH)
@@ -74,13 +74,13 @@ for index, row in price.iterrows():
     prices_to_insert.append([contractor, code, title, price_usd, today])
     if len(prices_to_insert) >= batch_size:
         args = ','.join(cursor.mogrify('(%s,%s,%s,%s,%s)', i).decode('utf-8') for i in prices_to_insert)
-        cursor.execute('insert into prices(contractor, code, title, price_usd, updated_at) values ' + args)
+        cursor.execute('insert into raw_prices(contractor, code, title, price_usd, updated_at) values ' + args)
         connection.commit()
         print('Inserted ', len(prices_to_insert), ' prices')
         prices_to_insert = []
 
 args = ','.join(cursor.mogrify('(%s,%s,%s,%s,%s)', i).decode('utf-8') for i in prices_to_insert)
-cursor.execute('insert into prices(contractor, code, title, price_usd, updated_at) values ' + args)
+cursor.execute('insert into raw_prices(contractor, code, title, price_usd, updated_at) values ' + args)
 connection.commit()
 print('Inserted ', len(prices_to_insert), ' prices')
 
