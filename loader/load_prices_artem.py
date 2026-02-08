@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import datetime
 import os
 import zipfile
 import imap_tools
@@ -8,6 +8,7 @@ import psycopg2
 import math
 
 from dotenv import load_dotenv
+from imap_tools import A
 
 load_dotenv()
 
@@ -25,9 +26,8 @@ if not os.path.exists(XLS_PATH):
 
 got_new_email = False
 with imap_tools.MailBox(IMAP_SERVER).login(EMAIL_USER, EMAIL_PASS, 'INBOX') as mailbox:
-    for msg in mailbox.fetch('ALL', reverse=True):
-        if msg.from_ != CONTRACTOR_EMAIL:
-            continue
+    criteria = A(date=datetime.date.today(), from_=CONTRACTOR_EMAIL)
+    for msg in mailbox.fetch(criteria, reverse=True):
         got_new_email = True
         today = msg.date
         print(today)
