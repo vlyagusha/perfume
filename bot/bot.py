@@ -14,14 +14,13 @@ from datetime import date
 load_dotenv()
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 RATES = {
-    'USD': {
-        date.today(): 0.
-    },
+    'USD': 0.,
 }
+RATES_UPDATED = date.today()
 
 def get_usd_rate() -> float:
-    if RATES['USD'][date.today()] > 0:
-        return RATES['USD'][date.today()]
+    if RATES['USD'] > 0 and RATES_UPDATED == date.today():
+        return RATES['USD']
 
     xml_string = requests.get('http://www.cbr.ru/scripts/XML_daily.asp').text
     root = ElementTree.fromstring(xml_string)
@@ -31,7 +30,7 @@ def get_usd_rate() -> float:
             rate = float(valute.find('Value').text.replace(',', '.'))
             break
     rate = round(rate * 1.05, 0)
-    RATES['USD'][date.today()] = rate
+    RATES['USD'] = rate
 
     return rate
 
