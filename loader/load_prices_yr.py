@@ -26,7 +26,7 @@ XLS_PATH += 'yr.xls'
 
 got_new_email = False
 with imap_tools.MailBox(IMAP_SERVER).login(EMAIL_USER, EMAIL_PASS, 'INBOX') as mailbox:
-    criteria = A(date_gte=datetime.date.today() - datetime.timedelta(days=1), from_=CONTRACTOR_EMAIL)
+    criteria = A(date_gte=datetime.date.today() - datetime.timedelta(days=2), from_=CONTRACTOR_EMAIL)
     for msg in mailbox.fetch(criteria, reverse=True):
         got_new_email = True
         today = msg.date
