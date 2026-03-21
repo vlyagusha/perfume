@@ -9,7 +9,7 @@ import requests
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 from dotenv import load_dotenv
-from datetime import date
+from datetime import date, datetime
 
 load_dotenv()
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
@@ -38,6 +38,8 @@ async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(f'Hello {update.effective_user.first_name}')
 
 async def search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    print(datetime.now(), update.message.text, update.effective_user.first_name, update.effective_chat.username, update.effective_user.link)
+
     connection = psycopg2.connect(
         host=os.environ.get('DATABASE_HOST'),
         port=os.environ.get('DATABASE_PORT'),
@@ -52,19 +54,23 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = 'select code, title, price_usd, price_rub from raw_prices'
 
     need_otliv = False
-    slugs = []
+    slugs_title = []
+    slugs_code = []
     for slug in update.message.text.split():
-        if slug.lower() == 'отлив':
+        if 'отлив' in slug.lower():
             need_otliv = True
-        slugs.append(f"title ilike '%{slug}%'")
+
+        slugs_title.append(f"title ilike '%{slug}%'")
+        slugs_code.append(f"code ilike '%{slug}%'")
 
     if not need_otliv:
-        slugs.append(f"title not ilike '%отлив%'")
+        slugs_title.append(f"title not ilike '%отлив%'")
 
-    query += ' where '
-    query += ' and '.join(slugs)
+    title_query = ' and '.join(slugs_title)
+    code_query = ' or '.join(slugs_code)
+
+    query += f" where ({title_query}) or ({code_query})"
     query += ' order by coalesce(price_usd, price_rub) desc'
-    # query += ' limit 100'
 
     cursor = connection.cursor()
     cursor.execute(query)
