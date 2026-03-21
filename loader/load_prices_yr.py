@@ -4,6 +4,7 @@ import os
 import imap_tools
 import pandas as pd
 import psycopg2
+import xlrd
 
 from dotenv import load_dotenv
 from imap_tools import A
@@ -62,6 +63,7 @@ batch_size = 5000
 cursor.execute('delete from raw_prices where contractor = %s', (contractor, ))
 connection.commit()
 
+wb = xlrd.open_workbook(XLS_PATH, encoding_override='windows-1251')
 price = pd.read_excel(XLS_PATH)
 prices_to_insert = []
 for index, row in price.iterrows():
@@ -69,6 +71,7 @@ for index, row in price.iterrows():
         continue
     code = str(row.iloc[0])
     title = str(row.iloc[1])
+    title = title.encode('latin-1').decode('cp1251')
     price_usd = float(row.iloc[2])
 
     prices_to_insert.append([contractor, code, title, price_usd, today])

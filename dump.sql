@@ -6,7 +6,6 @@ drop table if exists raw_prices;
 
 create table raw_prices
 (
-    id           bigserial,
     contractor   text not null,
     code         text not null,
     title        text not null,
