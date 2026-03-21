@@ -3,6 +3,7 @@
 import os
 import psycopg2
 import locale
+import logging
 import xml.etree.ElementTree as ElementTree
 import requests
 
@@ -10,6 +11,9 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 from dotenv import load_dotenv
 from datetime import date, datetime
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename='bot.log', level=logging.INFO)
 
 load_dotenv()
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
@@ -38,7 +42,7 @@ async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(f'Hello {update.effective_user.first_name}')
 
 async def search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    print(datetime.now(), update.message.text, update.effective_user.first_name, update.effective_chat.username, update.effective_user.link)
+    logger.info(f"{update.message.text}, {update.effective_user.first_name}, {update.effective_chat.username}, {update.effective_user.link}")
 
     connection = psycopg2.connect(
         host=os.environ.get('DATABASE_HOST'),
