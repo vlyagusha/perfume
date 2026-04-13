@@ -3,7 +3,6 @@ begin;
 create extension if not exists pg_trgm;
 
 drop table if exists raw_prices;
-
 create table raw_prices
 (
     contractor   text not null,
@@ -13,9 +12,15 @@ create table raw_prices
     price_rub    double precision,
     updated_at   timestamp default now() not null
 );
-
 alter table raw_prices owner to perfume_user;
-
 create index idx_raw_prices_title_trgm on raw_prices using gin (title gin_trgm_ops);
+
+drop table if exists rates;
+create table rates
+(
+    code text not null primary key,
+    rate double precision not null
+);
+alter table rates owner to perfume_user;
 
 commit;

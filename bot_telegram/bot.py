@@ -87,21 +87,24 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         price_usd = float(row[2] or 0)
         price_rub = float(row[3] or 0)
 
-        price = 0
+        price1 = 0
+        price2 = 0
         if not price_rub == 0:
-            price = round(price_rub * 1.2, -2)
+            price1 = round(price_rub * 1.1, -2)
+            price2 = round(price_rub * 1.2, -2)
 
         if not price_usd == 0:
             rate = get_usd_rate()
             if rate == 0:
                 continue
-            price = round(price_usd * rate * 1.2, -2)
+            price1 = round(price_usd * rate * 1.1, -2)
+            price2 = round(price_usd * rate * 1.2, -2)
 
-        if len(result + f'{code} {title} {locale.currency(price, grouping=True)}\n') >= 1000:
+        if len(result + f'{code} {title} {locale.currency(price1, grouping=True)} {locale.currency(price2, grouping=True)}\n') >= 1000:
             await update.message.reply_text(result)
             result = ''
 
-        result += f'{code} {title} {locale.currency(price, grouping=True)}\n'
+        result += f'{code} {title} {locale.currency(price1, grouping=True)} {locale.currency(price2, grouping=True)}\n'
     if result == '':
         result = 'Ничего не нашлось'
 
