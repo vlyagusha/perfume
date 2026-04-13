@@ -111,7 +111,7 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     await update.message.reply_text(result)
 
-app = ApplicationBuilder().token(os.environ.get('BOT_TOKEN')).build()
+app = ApplicationBuilder().token(os.environ.get('TELEGRAM_BOT_TOKEN')).build()
 app.add_handler(CommandHandler("hello", hello))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, search))
 

@@ -25,7 +25,7 @@ XLS_PATH += 'piramida9999.xls'
 
 got_new_email = False
 with imap_tools.MailBox(IMAP_SERVER).login(EMAIL_USER, EMAIL_PASS, 'INBOX') as mailbox:
-    criteria = A(date=datetime.date.today(), from_=CONTRACTOR_EMAIL)
+    criteria = A(date=datetime.date.today() - datetime.timedelta(days=1), from_=CONTRACTOR_EMAIL)
     for msg in mailbox.fetch(criteria, reverse=True):
         got_new_email = True
         today = msg.date
